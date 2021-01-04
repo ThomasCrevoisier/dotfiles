@@ -1,0 +1,509 @@
+#|
+#| File    : ~/.config/i3/config
+#| Charset : UTF-8
+#| Author  : Fabien Cazenave
+#| Source  : https://github.com/fabi1cazenave/dotFiles
+#| License : WTFPL
+#|
+#| Requires i3 v4.2+, tested with i3 v4.8.
+#| References: /etc/i3/config, http://i3wm.org/docs/userguide.html
+#| Bonus: see PotatoesMaster/i3-vim-syntax for i3 syntax hilighting.
+#|
+
+#|    overview                                                              {{{
+#|-----------------------------------------------------------------------------
+# This configuration relies on a single modifier key.
+# It uses keycodes instead of keysyms in order to be compatible with any
+# keyboard layout: qwerty, qwertz, azerty, dvorak…
+#
+# quick config:
+# ┌─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┲━━━━━━━━━━┓
+# │     │  w1 │  w2 │  w3 │  w4 │  w5 │  w6 │  w7 │  w8 │  w9 │  w10│  w11│  w12┃          ┃
+# │ `   │ 1   │ 2   │ 3   │ 4   │ 5   │ 6   │ 7   │ 8   │ 9   │ 0   │ -   │ =   ┃ ⌫        ┃
+# ┢━━━━━┷━━┱──┴──┬──┴──┬──┴──┬──┴──┬──┴──┬──┴──┬──┴──┬──┴──┬──┴──┬──┴──┬──┴──┬──┺━━┯━━━━━━━┩
+# ┃        ┃     │close│     │rsize│     │     │ prev│ next│split│start│     │ }   │ |     │
+# ┃ ↹      ┃ q   │ w   │ e   │ r   │ t   │ y   │ u   │ i   │ o   │ p   │ [   │ ]   │ \     │
+# ┣━━━━━━━━┻┱────┴┬────┴┬────┴┬────┴┬────┴┬────┴┬────┴┬────┴┬────┴┬────┴┬────┴┲━━━━┷━━━━━━━┪
+# ┃         ┃ tab │stack│ div.│ full│     │focus│focus│focus│focus│focus│focus┃            ┃
+# ┃ ⇬       ┃ a   │ s   │ d   │ f   │ g   │ h ← │ j ↓ │ k ↑ │ l → │ ;   │ '   ┃ ⏎          ┃
+# ┣━━━━━━━━━┻━━┱──┴──┬──┴──┬──┴──┬──┴──┬──┴──┬──┴──┬──┴──┬──┴──┬──┴──┬──┴──┲━━┻━━━━━━━━━━━━┫
+# ┃            ┃     │     │     │     │bordr│     │     │     │     │     ┃               ┃
+# ┃ ⇧          ┃ z   │ x   │ c   │ v   │ b   │ n   │ m   │ ,   │ .   │ /   ┃ ⇧             ┃
+# ┣━━━━━━━┳━━━━┻━━┳━━┷━━━━┱┴─────┴─────┴─────┴─────┴─────┴─┲━━━┷━━━┳━┷━━━━━╋━━━━━━━┳━━━━━━━┫
+# ┃       ┃ *mod* ┃       ┃         tiling/floating toggle ┃       ┃       ┃       ┃       ┃
+# ┃ Ctrl  ┃ super ┃ Alt   ┃ Space                          ┃ AltGr ┃ super ┃ menu  ┃ Ctrl  ┃
+# ┗━━━━━━━┻━━━━━━━┻━━━━━━━┹────────────────────────────────┺━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┛
+#
+# keycodes:
+# ┌─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┲━━━━━━━━━━┓
+# │  49 │  10 │  11 │ 12  │  13 │  14 │  15 │  16 │  17 │  18 │  19 │  20 │  21 ┃       22 ┃
+# │ `   │ 1   │ 2   │ 3   │ 4   │ 5   │ 6   │ 7   │ 8   │ 9   │ 0   │ -   │ =   ┃ ⌫        ┃
+# ┢━━━━━┷━━┱──┴──┬──┴──┬──┴──┬──┴──┬──┴──┬──┴──┬──┴──┬──┴──┬──┴──┬──┴──┬──┴──┬──┺━━┯━━━━━━━┩
+# ┃  23    ┃  24 │  25 │  26 │  27 │  28 │  29 │  30 │  31 │  32 │  33 │  34 │  35 │    63 │
+# ┃ ↹      ┃ q   │ w   │ e   │ r   │ t   │ y   │ u   │ i   │ o   │ p   │ [   │ ]   │ \     │
+# ┣━━━━━━━━┻┱────┴┬────┴┬────┴┬────┴┬────┴┬────┴┬────┴┬────┴┬────┴┬────┴┬────┴┲━━━━┷━━━━━━━┪
+# ┃  66     ┃  38 │  39 │  40 │  41 │  42 │  43 │  44 │  45 │  46 │  47 │  48 ┃         36 ┃
+# ┃ ⇬       ┃ a   │ s   │ d   │ f   │ g   │ h   │ j   │ k   │ l   │ ;   │ '   ┃ ⏎          ┃
+# ┣━━━━━━━━━┻━━┱──┴──┬──┴──┬──┴──┬──┴──┬──┴──┬──┴──┬──┴──┬──┴──┬──┴──┬──┴──┲━━┻━━━━━━━━━━━━┫
+# ┃  50        ┃  52 │  53 │  54 │  55 │  56 │  57 │  58 │  59 │  60 │  61 ┃            62 ┃
+# ┃ ⇧          ┃ z   │ x   │ c   │ v   │ b   │ n   │ m   │ ,   │ .   │ /   ┃ ⇧             ┃
+# ┣━━━━━━━┳━━━━┻━━┳━━┷━━━━┱┴─────┴─────┴─────┴─────┴─────┴─┲━━━┷━━━┳━┷━━━━━╋━━━━━━━┳━━━━━━━┫
+# ┃  37   ┃  Mod4 ┃  Mod1 ┃                             65 ┃    93 ┃   116 ┃   117 ┃   109 ┃
+# ┃ Ctrl  ┃ super ┃ Alt   ┃ Space                          ┃ AltGr ┃ super ┃ menu  ┃ Ctrl  ┃
+# ┗━━━━━━━┻━━━━━━━┻━━━━━━━┹────────────────────────────────┺━━━━━━━┻━━━━━━━┻━━━━━━━┻━━━━━━━┛
+#
+# }}}
+
+#|    general                                                               {{{
+#|-----------------------------------------------------------------------------
+
+# define your preferred main modifier key: Alt_L (Mod1) or Super_L (Mod4)
+set $mod Mod4
+
+# use Mouse+$mod to drag floating windows to their wanted position
+floating_modifier $mod
+
+# Font for window titles and the status bar. Note: ISO 10646 = Unicode.
+# font -misc-fixed-medium-r-normal--13-120-75-75-C-70-iso10646-1
+# font -*-fixed-*-r-normal-*-*-120-*-*-*-*-iso8859-*
+# font pango:DejaVu Sans 8
+font pango:Ubuntu 9
+
+# default mode: workspace_layout <default|stacking|tabbed>
+workspace_layout default
+
+# i3-gaps stuff
+gaps inner 10
+gaps outer 0
+
+# default mode: <normal|1pixel|none>
+new_window 1pixel
+new_float normal
+
+# Statusline (i3bar)
+bar {
+  # status_command i3status
+  # tray_output primary
+  position top
+}
+
+# Default color theme:
+#   class                 border  backgr. text
+# client.focused          #4c7899 #285577 #ffffff
+# client.focused_inactive #333333 #5f676a #ffffff
+# client.unfocused        #333333 #222222 #888888
+# client.urgent           #2f343a #900000 #ffffff
+
+# Custom color theme:
+#   class                 border  backgr. text
+# client.focused          #2f343a #904040 #ffffff
+# client.focused          #2f343a #602020 #ffffff
+# client.focused          #2f343a #501010 #ffffff
+# client.focused          #2f343a #900000 #ffffff
+client.focused_inactive   #333333 #444444 #ffffff
+
+# }}}
+
+#|    workspaces                                                            {{{
+#|-----------------------------------------------------------------------------
+
+# Workspace names:
+# the default modifier being Super_L, workspaces 6 to 12 are preferred
+# (=> left thumb + right hand to select a workspace)
+set $w01  1
+set $w02  2
+set $w03  3
+set $w04  4
+set $w05  5
+set $w06  6
+set $w07  7
+set $w08  8
+set $w09  9
+set $w10 10
+set $w11 11
+set $w12 12
+
+# http://i3wm.org/docs/userguide.html#command_criteria (xprop might be useful…)
+# - instance    : window instance = 1st part of WM_CLASS
+# - class       : window class    = 2nd part of WM_CLASS
+# - window_role : window role     = WM_WINDOW_ROLE
+# - title       : X11 window title (_NET_WM_NAME or WM_NAME as fallback)
+
+# Common apps are sorted by workspace
+# assign [class="^Thunderbird"]          → $w06
+# assign [class="^Work$"]                → $w08
+# assign [class="^B2g$"]                 → $w09
+# assign [class="^VirtualBox"]           → $w10
+# assign [class="^Telegram$"]            → $w11
+# assign [class="^Pidgin"]               → $w11
+# assign [class="^Skype"]                → $w11
+# assign [class="^Hotot"]                → $w11
+# assign [class="^Vidyo"]                → $w12
+# assign [class="^Vlc"]                  → $w12
+# assign [class="^Totem"]                → $w12
+
+# Firefox can be run with a --class argument: (= "Firefox" by default)
+#   https://bugzilla.mozilla.org/show_bug.cgi?id=496653
+#   http://www.chevrel.org/carnet/?post/2012/06/06/Fonctionnement-en-parallele-de-deux-versions-de-Firefox
+# …which allows to use such commands:
+#   firefox -no-remote -profile ~/.mozilla/social --class "social"
+#   firefox -no-remote -profile ~/.mozilla/webdev --class "webdev"
+#   firefox -no-remote -profile ~/.mozilla/zimbra --class "zimbra"
+# assign [title="Firefox Developer"]     → $w09
+# assign [title="Firefox WebIDE"]        → $w09
+# assign [instance="Devtools"]           → $w09
+# assign [class="Firefox"]               → $w07
+# assign [class="bugzilla"]              → $w08
+# assign [class="webdev"]                → $w09
+# assign [class="social"]                → $w11
+
+# }}}
+
+#|    floating windows                                                      {{{
+#|-----------------------------------------------------------------------------
+
+# Floating windows should have a border and titlebar (not working?)
+new_float normal
+
+# Correct handling of floating dialogs
+# https://wiki.archlinux.org/index.php/i3#Correct_handling_of_floating_dialogs
+for_window [window_role="pop-up"]      floating enable border normal
+for_window [window_role="task_dialog"] floating enable border normal
+
+# Gnome-Terminal and ROXTerm can be run with a --role argument, e.g.:
+#   roxterm --role=irc -e weechat-curses
+assign [window_role="irc"]             → $w11
+for_window [window_role="OrgMode"]     floating enable border normal
+
+# ROXTerm and URxvt can be run with a -T or --title argument, e.g.:
+#   urxvt -T Org-mode -e vim ~/.notes.org
+# for_window [title="Org-mode"]          floating enable
+
+# This works for Firefox, Thunderbird, and probably a lot of apps
+#for_window [window_role="browser"]     floating enable
+for_window [window_role="About"]       floating enable border normal
+for_window [window_role="Preferences"] floating enable border normal
+
+# These windows require a specific rule to be displayed in floating mode:
+#for_window [window_role="^Manager"]    floating enable
+#for_window [instance="^Download"]      floating enable
+for_window [instance="^Update"]        floating enable border normal
+for_window [instance="^gcalctool"]     floating enable border normal
+for_window [instance="^galculator"]    floating enable border normal
+for_window [instance="^gnome-keyring"] floating enable border normal
+for_window [instance="^file_progress"] floating enable border normal
+for_window [title="^Compress"]         floating enable border normal
+for_window [title="^Compression"]      floating enable border normal
+for_window [title="^screenkey"]        floating enable border normal
+for_window [title="^Debconf"]          floating enable border normal
+for_window [class="control-center"]    floating enable border normal
+for_window [class="^Pavucontrol"]      floating enable border normal
+for_window [class="^B2G$"]             floating enable border normal
+for_window [class="^B2g$"]             floating enable border normal
+
+# }}}
+
+#|    wmii-like keybindings                                                 {{{
+#|-----------------------------------------------------------------------------
+
+# Switch between tAbbed/Stacked/Divided/Fullscreen modes         ($mod+[asdf])
+bind $mod+38 layout tabbed
+bind $mod+39 layout stacked
+bind $mod+40 layout toggle split
+bind $mod+41 fullscreen
+
+# Toggle global fullscreen                                       ($mod+shift+f)
+bind $mod+Shift+41 fg
+
+# Switch between tiling/floating layers                            ($mod+Space)
+bind $mod+65 focus mode_toggle
+
+# Send client to tiling/floating layer                       ($mod+Shift+Space)
+bind $mod+Shift+65 floating toggle
+
+# Kill current window                                                  ($mod+w)
+bind $mod+25 kill
+
+# Focus Window, Vim-style                                         ($mod+[hjkl])
+bind $mod+43 focus left
+bind $mod+44 focus down
+bind $mod+45 focus up
+bind $mod+46 focus right
+# Focus Window, using cursor keys                                 ($mod+arrows)
+#bindsym $mod+Left  focus left
+#bindsym $mod+Down  focus down
+#bindsym $mod+Up    focus up
+#bindsym $mod+Right focus right
+
+# Move Focused Window, Vim-style                            ($mod+Shift+[hjkl])
+bind $mod+Shift+43 move left
+bind $mod+Shift+44 move down
+bind $mod+Shift+45 move up
+bind $mod+Shift+46 move right
+# Move Focused Window, using cursor keys                    ($mod+Shift+arrows)
+#bindsym $mod+Shift+Left  move left
+#bindsym $mod+Shift+Down  move down
+#bindsym $mod+Shift+Up    move up
+#bindsym $mod+Shift+Right move right
+
+# Workspaces [1…12]                                       ($mod+[1234567890-=])
+bind $mod+10 workspace $w01
+bind $mod+11 workspace $w02
+bind $mod+12 workspace $w03
+bind $mod+13 workspace $w04
+bind $mod+14 workspace $w05
+bind $mod+15 workspace $w06
+bind $mod+16 workspace $w07
+bind $mod+17 workspace $w08
+bind $mod+18 workspace $w09
+bind $mod+19 workspace $w10
+bind $mod+20 workspace $w11
+bind $mod+21 workspace $w12
+
+# Move to Workspace [1…12]                          ($mod+Shift+[1234567890-=])
+bind $mod+Shift+10 move workspace $w01
+bind $mod+Shift+11 move workspace $w02
+bind $mod+Shift+12 move workspace $w03
+bind $mod+Shift+13 move workspace $w04
+bind $mod+Shift+14 move workspace $w05
+bind $mod+Shift+15 move workspace $w06
+bind $mod+Shift+16 move workspace $w07
+bind $mod+Shift+17 move workspace $w08
+bind $mod+Shift+18 move workspace $w09
+bind $mod+Shift+19 move workspace $w10
+bind $mod+Shift+20 move workspace $w11
+bind $mod+Shift+21 move workspace $w12
+
+# }}}
+
+#|    i3-specific keybindings                                               {{{
+#|-----------------------------------------------------------------------------
+
+# Resize Containers, Vim-style                            ($mod+Control+[hjkl])
+# see http://bugs.i3wm.org/report/ticket/576
+bind $mod+Control+43 resize shrink right 10 px or 5 ppt
+bind $mod+Control+44 resize grow   down  10 px or 5 ppt
+bind $mod+Control+45 resize shrink down  10 px or 5 ppt
+bind $mod+Control+46 resize grow   right 10 px or 5 ppt
+# Resize Containers, using cursor keys                    ($mod+Control+arrows)
+#bindsym $mod+Control+Left  resize shrink right 10 px or 5 ppt
+#bindsym $mod+Control+Down  resize grow   down  10 px or 5 ppt
+#bindsym $mod+Control+Up    resize shrink down  10 px or 5 ppt
+#bindsym $mod+Control+Right resize grow   right 10 px or 5 ppt
+
+# These [hjkl] bindings trigger as soon as you enter the resize mode
+bindsym $mod+r mode "resize"
+mode "resize" {
+  # Vim-style
+  bind 43 resize shrink right 10 px or 5 ppt
+  bind 44 resize grow   down  10 px or 5 ppt
+  bind 45 resize shrink down  10 px or 5 ppt
+  bind 46 resize grow   right 10 px or 5 ppt
+  # cursor keys
+  #bindsym Left  resize shrink right 10 px or 5 ppt
+  #bindsym Down  resize grow   down  10 px or 5 ppt
+  #bindsym Up    resize shrink down  10 px or 5 ppt
+  #bindsym Right resize grow   right 10 px or 5 ppt
+
+  # back to normal: Enter or Escape or Space
+  bindsym Return mode "default"
+  bindsym Escape mode "default"
+  bindsym space  mode "default"
+}
+
+# Previous/Next Workspace                                           ($mod+[ui])
+bind $mod+30 workspace prev
+bind $mod+31 workspace next
+
+# Move to previous/Next Workspace                             ($mod+Shift+[ui])
+bind $mod+Shift+30 move window to workspace prev
+bind $mod+Shift+31 move window to workspace next
+
+# Back to last workspace                                               ($mod+')
+bind $mod+48 workspace back_and_forth
+workspace_auto_back_and_forth yes
+
+# Select adjacent output (screen)                                 ($mod+[nm,.])
+bind $mod+57 output left
+bind $mod+58 output down
+bind $mod+59 output up
+bind $mod+60 output right
+
+# Move workspace to adjacent output (screen)                      ($mod+[nm,.])
+bind $mod+Shift+57 move workspace to output left
+bind $mod+Shift+58 move workspace to output down
+bind $mod+Shift+59 move workspace to output up
+bind $mod+Shift+60 move workspace to output right
+
+# Move the currently focused window to the scratchpad                  ($mod+/)
+bind $mod+61 scratchpad show
+
+# Show/hide the scratchpad window                                ($mod+Shift+/)
+# If there are multiple scratchpad windows, this command cycles through them.
+bind $mod+Shift+61 move scratchpad
+
+# Reload i3 configuration                                        ($mod+Shift+r)
+bind $mod+Shift+27 reload
+
+# Restart i3 inplace                                     ($mod+Shift+BackSpace)
+bind $mod+Shift+22 restart
+
+# Exit i3                                                 ($mod+Ctrl+BackSpace)
+bind $mod+Control+22 exit
+# bind $mod+Control+22 exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -b 'Yes, exit i3' 'i3-msg exit'"
+
+# Split (horizontal/vertical)                                  ($mod[+Shift]+o)
+bind $mod+32       split v
+bind $mod+Shift+32 split h
+
+# Focus parent/child                                           ($mod[+Shift]+;)
+# note: this key doesn’t work well with Qwerty-Lafayette (dead key)
+bind $mod+47       focus parent
+bind $mod+Shift+47 focus child
+
+# Cycle through border styles                                          ($mod+b)
+# (note: does not apply to tabbed containers)
+bind $mod+56 border toggle
+
+# }}}
+
+#|    applications & scripts                                                {{{
+#|-----------------------------------------------------------------------------
+
+# Start a new terminal                                             ($mod+Enter)
+# bind $mod+36 exec roxterm
+bind $mod+36 exec alacritty
+
+# Start a new file browser                                   ($mod+Shift+Enter)
+# bind $mod+Shift+36 exec $(nautilus --no-desktop)
+bind $mod+Shift+36 exec $(urxvt -e ranger)
+
+# Application launcher                                                 ($mod+p)
+# beware of gnome-settings-daemon:
+# http://askubuntu.com/questions/68463/how-to-disable-global-super-p-shortcut
+# http://askubuntu.com/questions/20113/how-to-stop-mod4-p-from-switching-the-display
+# bind $mod+33 exec $(dmenu_path | sort -u | dmenu -fn '-*-fixed-*-r-normal-*-*-120-*-*-*-*-iso8859-*' -nb '#000000' -nf '#FFFFFF' -sb '#1793d1')
+bind $mod+33 exec --no-startup-id rofi -show run
+bind $mod+Shift+33 exec --no-startup-id rofi -show window
+
+# bind $mod+33 exec --no-startup-id $(dmenu_run -fn '-*-fixed-*-r-normal-*-*-120-*-*-*-*-iso8859-*' -nb '#000000' -nf '#FFFFFF' -sb '#1793d1')
+
+# There also is the (new) i3-dmenu-desktop which only displays applications
+# shipping a .desktop file.
+# bind $mod+Shift+33 exec --no-startup-id i3-dmenu-desktop
+
+# Autostart (= personal startup script)
+# exec $(autostart gtk)
+
+# }}}
+
+#|    generic shortcuts (xdotool powwa!)                                    {{{
+#|-----------------------------------------------------------------------------
+
+# Dvorak-compliant cut/copy/paste                                  ($mod+[xcv])
+bind $mod+53 exec $(xdotool getactivewindow key ctrl+x)
+bind $mod+54 exec $(xdotool getactivewindow key ctrl+c)
+bind $mod+55 exec $(xdotool getactivewindow key ctrl+v)
+
+# Word-by-word movements                                            (alt+arrow)
+# bindsym mod1+Left  exec $(xdotool getactivewindow key ctrl+Left)
+# bindsym mod1+Down  exec $(xdotool getactivewindow key ctrl+Down)
+# bindsym mod1+Up    exec $(xdotool getactivewindow key ctrl+Up)
+# bindsym mod1+Right exec $(xdotool getactivewindow key ctrl+Right)
+
+#                                                                 (super+arrow)
+bindsym mod4+Left  exec $(xdotool getactivewindow key Home)
+bindsym mod4+Down  exec $(xdotool getactivewindow key Next)
+bindsym mod4+Up    exec $(xdotool getactivewindow key Prior)
+bindsym mod4+Right exec $(xdotool getactivewindow key End)
+
+# Word-by-word selection                                      (alt+shift+arrow)
+# bindsym mod1+Shift+Left  exec $(xdotool getactivewindow key ctrl+shift+Left)
+# bindsym mod1+Shift+Down  exec $(xdotool getactivewindow key ctrl+shift+Down)
+# bindsym mod1+Shift+Up    exec $(xdotool getactivewindow key ctrl+shift+Up)
+# bindsym mod1+Shift+Right exec $(xdotool getactivewindow key ctrl+shift+Right)
+
+#                                                           (super+shift+arrow)
+bindsym mod4+Shift+Left  exec $(xdotool getactivewindow key shift+Home)
+bindsym mod4+Shift+Down  exec $(xdotool getactivewindow key shift+Next)
+bindsym mod4+Shift+Up    exec $(xdotool getactivewindow key shift+Prior)
+bindsym mod4+Shift+Right exec $(xdotool getactivewindow key shift+End)
+
+# Mouse pointer                                                    ($mod+arrow)
+# bindsym $mod+Left  exec $(xdotool mousemove_relative -- -20   0)
+# bindsym $mod+Down  exec $(xdotool mousemove_relative --   0  20)
+# bindsym $mod+Up    exec $(xdotool mousemove_relative --   0 -20)
+# bindsym $mod+Right exec $(xdotool mousemove_relative --  20   0)
+
+# Mouse clicks                                               ($mod+shift+arrow)
+# bindsym $mod+Shift+Left  exec $(xdotool click 1)
+# bindsym $mod+Shift+Down  exec $(xdotool click 5)
+# bindsym $mod+Shift+Up    exec $(xdotool click 4)
+# bindsym $mod+Shift+Right exec $(xdotool click 3)
+
+# }}}
+
+#|    multimedia keys (Thinkpad X220)                                       {{{
+#|-----------------------------------------------------------------------------
+
+# Fn + F1  : 121
+# Fn + F2  : 122
+# Fn + F3  : 123
+# Fn + F4  : 173
+# Fn + F5  : 172
+# Fn + F6  : 171
+# Fn + F7  :
+# Fn + F8  :
+# Fn + F9  : 225
+# Fn + F10 :
+# Fn + F11 : 232
+# Fn + F12 : 233
+
+# Screenshot                                                           (PrtScr)
+# +shift ⇒ focused window only
+bind 107       exec $(scrot    -e 'mv $f ~/Pictures/Screenshots')
+bind Shift+107 exec $(scrot -u -e 'mv $f ~/Pictures/Screenshots')
+
+# Volume control                                               (mute|vol-|vol+)
+bind 123 exec $(amixer -q set Master 2dB+ unmute && pkill -USR1 -x i3status)
+bind 122 exec $(amixer -q set Master 2dB- unmute && pkill -USR1 -x i3status)
+bind 121 exec $(amixer -q set Master toggle && pkill -USR1 -x i3status)
+
+# Playlist control (cmus)                                            (Fn+arrow)
+#bind 171 exec $(cmus-remote --next)
+#bind 172 exec $(cmus-remote --pause)
+#bind 173 exec $(cmus-remote --prev)
+#bind 174 exec $(cmus-remote --stop)
+
+# lock, suspend
+bind 232 exec $(i3lock -c 002b36)
+bind 233 exec $(i3lock -c 002b36 && systemctl suspend)
+
+# ???                                                        (Fn+[F5|F6|F7|F8])
+#bind 246 exec $()
+#bind 220 exec $()
+#bind 235 exec $()
+#bind 199 exec $()
+
+# }}}
+
+# vim: set fdm=marker fmr={{{,}}} fdl=0:
+
+# Touchpad controls
+bindsym XF86TouchpadToggle exec /some/path/toggletouchpad.sh # toggle touchpad
+
+# Media player controls
+bindsym XF86AudioPlay exec playerctl play
+bindsym XF86AudioPause exec playerctl pause
+bindsym XF86AudioNext exec playerctl next
+bindsym XF86AudioPrev exec playerctl previous
+
+exec --no-startup-id tint2
+
+exec --no-startup-id xinput set-prop "SynPS/2 Synaptics Touchpad" "Synaptics Tap Time" 0
+exec --no-startup-id xinput set-prop "SynPS/2 Synaptics Touchpad" "Synaptics Edge Scrolling" 0
+
+exec /usr/bin/pulseaudio --start --log-target=syslog
+
+exec_always --no-startup-id "killall -q compton; compton --config ~/.config/compton.conf"
+exec_always --no-startup-id "feh --bg-scale ~/Pictures/dark_souls_wallpaper.jpg"
